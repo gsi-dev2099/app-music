@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#ff3c3c" />
+    <meta name="description" content="Green Day — Boulevard of Broken Dreams. Lyric player with real-time sync." />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="BOBD" />
+
+    <!-- Start Single Page Apps for GitHub Pages -->
+    <script type="text/javascript">
+        // Single Page Apps for GitHub Pages
+        // https://github.com/rafrex/spa-github-pages
+        // This script checks to see if a redirect is present in the query string
+        // and converts it back into the correct url and adds it to the
+        // browser's history using window.history.replaceState(...),
+        // which will cause the browser to look like the correct url pending
+        // the initialization of the SPA.
+        (function (l) {
+            if (l.search[1] === '/') {
+                var decoded = l.search.slice(1).split('&').map(function (s) {
+                    return s.replace(/~and~/g, '&')
+                }).join('?');
+                window.history.replaceState(null, null,
+                    l.pathname.slice(0, l.pathname.lastIndexOf('/')) + decoded + l.hash
+                );
+            }
+        }(window.location))
+    </script>
+    <!-- End Single Page Apps for GitHub Pages -->
+
+    <title>Boulevard of Broken Dreams — Green Day</title>
+    <base href="/app-music/" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json" />
+
+    <!-- Apple Touch Icon (for iOS "Add to Home Screen") -->
+    <link rel="apple-touch-icon" href="cover.png" />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <style>
+        #blazor-error-ui {
+            background: rgba(0,0,0,0.85);
+            color: white;
+            bottom: 0;
+            display: none;
+            left: 0;
+            padding: 0.6rem 1.25rem 0.7rem;
+            position: fixed;
+            width: 100%;
+            z-index: 1000;
+            font-family: 'Outfit', sans-serif;
+        }
+        @keyframes load {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(250%); }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div style="height:100dvh;display:flex;align-items:center;justify-content:center;background:#0a0a0c;color:white;font-family:'Outfit',sans-serif;">
+            <div style="text-align:center;">
+                <p style="font-size:0.65rem;letter-spacing:0.45em;color:#ff3c3c;text-transform:uppercase;margin-bottom:16px;">Green Day</p>
+                <h1 style="font-size:1.3rem;font-weight:700;margin-bottom:24px;">Boulevard of Broken Dreams</h1>
+                <div style="width:180px;height:2px;background:rgba(255,255,255,0.08);margin:0 auto;overflow:hidden;border-radius:2px;">
+                    <div style="width:45%;height:100%;background:#ff3c3c;animation:load 1.4s infinite ease-in-out;border-radius:2px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="js/AudioEngine.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker
+                    .register('/service-worker.js', { scope: '/' })
+                    .then((reg) => {
+                        console.log('[PWA] Service Worker registered:', reg.scope);
+
+                        // Check for updates every 60 seconds
+                        setInterval(() => reg.update(), 60000);
+                    })
+                    .catch((err) => {
+                        console.warn('[PWA] Service Worker registration failed:', err);
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>
