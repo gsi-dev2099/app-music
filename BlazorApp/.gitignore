@@ -1,0 +1,16 @@
+# Dependencies and build outputs
+**/bin/
+**/obj/
+*.user
+
+# VS / Rider IDE
+.vs/
+.idea/
+*.suo
+*.rsuser
+
+# Publish output
+**/publish/
+
+# User secrets
+**/appsettings.Development.json

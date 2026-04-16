@@ -1,0 +1,82 @@
+name: Deploy Blazor WASM to GitHub Pages
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+# Sets permissions to allow deploying to Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── Checkout source ──────────────────────────────────────────────────
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Setup .NET 9 ─────────────────────────────────────────────────────
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      # ── Restore dependencies ──────────────────────────────────────────────
+      - name: Restore
+        run: dotnet restore
+
+      # ── Publish (Release mode, output to ./release) ───────────────────────
+      # IMPORTANT: --pathbase must match the repository name exactly.
+      # GitHub Pages serves from https://USERNAME.github.io/REPO_NAME/
+      - name: Publish
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          dotnet publish -c Release -o release --nologo \
+            -p:BlazorWebAssemblyStandaloneMode=true
+
+      # ── Fix base href in index.html ───────────────────────────────────────
+      # Replace <base href="/" /> with <base href="/REPO_NAME/" />
+      # This is required for all Blazor asset paths to resolve correctly.
+      - name: Fix base href
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          INDEX="release/wwwroot/index.html"
+          sed -i "s|<base href=\"/\" />|<base href=\"/${REPO_NAME}/\" />|g" "$INDEX"
+          echo "base href set to /${REPO_NAME}/"
+
+      # ── Add 404.html for SPA routing ──────────────────────────────────────
+      # GitHub Pages returns 404 for unknown routes. This copies index.html
+      # to 404.html so Blazor SPA routing still works.
+      - name: Add 404.html for SPA routing
+        run: cp release/wwwroot/index.html release/wwwroot/404.html
+
+      # ── Add .nojekyll to prevent GitHub's Jekyll from processing files ─────
+      - name: Add .nojekyll
+        run: touch release/wwwroot/.nojekyll
+
+      # ── Upload artifact ───────────────────────────────────────────────────
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: release/wwwroot
+
+      # ── Deploy to GitHub Pages ────────────────────────────────────────────
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

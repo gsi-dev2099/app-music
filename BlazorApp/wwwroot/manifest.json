@@ -1,0 +1,26 @@
+{
+  "name": "Boulevard of Broken Dreams",
+  "short_name": "BOBD",
+  "description": "Green Day — Boulevard of Broken Dreams · Lyrics & Audio Experience",
+  "display": "standalone",
+  "start_url": "/",
+  "background_color": "#0a0a0c",
+  "theme_color": "#ff3c3c",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "cover.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["music", "entertainment"],
+  "screenshots": []
+}

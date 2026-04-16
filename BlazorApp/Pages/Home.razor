@@ -1,0 +1,138 @@
+@page "/"
+@using BlazorApp.Models
+@using BlazorApp.Components
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@implements IDisposable
+
+<div class="background-overlay"></div>
+<div class="background-sweep"></div>
+<div class="background-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="blob blob-5"></div>
+</div>
+
+<main class="app-container">
+    <HeroSection />
+
+    <LyricsView Lyrics="lyricsData"
+                ActiveIndex="activeIndex"
+                OnLineClick="HandleSeek" />
+
+    <PlayerBar @ref="playerBar"
+               CurrentTime="currentTime"
+               Duration="duration"
+               IsPlaying="isPlaying" />
+</main>
+
+@code {
+    private List<LyricLine> lyricsData = new()
+    {
+        new() { Time = 0.0,   Text = "I walk a lonely road" },
+        new() { Time = 15.0,  Text = "The only one that I have ever known" },
+        new() { Time = 18.5,  Text = "Don't know where it goes" },
+        new() { Time = 20.5,  Text = "But it's home to me, and I walk alone" },
+        new() { Time = 29.5,  Text = "I walk this empty street" },
+        new() { Time = 32.5,  Text = "On the boulevard of broken dreams" },
+        new() { Time = 36.0,  Text = "Where the city sleeps" },
+        new() { Time = 38.5,  Text = "And I'm the only one, and I walk alone" },
+        new() { Time = 44.5,  Text = "I walk alone, I walk alone" },
+        new() { Time = 50.5,  Text = "I walk alone, I walk a-" },
+        new() { Time = 53.5,  Text = "My shadow's the only one that walks beside me" },
+        new() { Time = 59.0,  Text = "My shallow heart's the only thing that's beating" },
+        new() { Time = 64.0,  Text = "Sometimes I wish someone out there will find me" },
+        new() { Time = 69.5,  Text = "'Til then, I walk alone" },
+        new() { Time = 75.5,  Text = "Ah, ah, ah, ah" },
+        new() { Time = 81.0,  Text = "Ah, ah, ah" },
+        new() { Time = 87.5,  Text = "I'm walking down the line" },
+        new() { Time = 90.0,  Text = "That divides me somewhere in my mind" },
+        new() { Time = 93.5,  Text = "On the borderline" },
+        new() { Time = 96.0,  Text = "Of the edge and where I walk alone" },
+        new() { Time = 105.5, Text = "Read between the lines" },
+        new() { Time = 107.5, Text = "What's fucked up, and everything's all right" },
+        new() { Time = 111.5, Text = "Check my vital signs" },
+        new() { Time = 113.5, Text = "To know I'm still alive, and I walk alone" },
+        new() { Time = 119.5, Text = "I walk alone, I walk alone" },
+        new() { Time = 124.5, Text = "I walk alone, I walk a-" },
+        new() { Time = 128.5, Text = "My shadow's the only one that walks beside me" },
+        new() { Time = 133.5, Text = "My shallow heart's the only thing that's beating" },
+        new() { Time = 139.0, Text = "Sometimes I wish someone out there will find me" },
+        new() { Time = 145.0, Text = "'Til then, I walk alone" },
+        new() { Time = 150.5, Text = "Ah, ah, ah, ah" },
+        new() { Time = 157.0, Text = "Ah, ah" },
+        new() { Time = 160.0, Text = "I walk alone, I walk a-" },
+        new() { Time = 188.0, Text = "I walk this empty street" },
+        new() { Time = 191.0, Text = "On the boulevard of broken dreams" },
+        new() { Time = 194.0, Text = "Where the city sleeps" },
+        new() { Time = 196.5, Text = "And I'm the only one, and I walk a-" },
+        new() { Time = 200.5, Text = "My shadow's the only one that walks beside me" },
+        new() { Time = 205.5, Text = "My shallow heart's the only thing that's beating" },
+        new() { Time = 211.5, Text = "Sometimes I wish someone out there will find me" },
+        new() { Time = 217.0, Text = "'Til then, I walk alone" }
+    };
+
+    // State owned here; PlayerBar reads via Parameters — no event callbacks needed
+    private int activeIndex = -1;
+    private double currentTime = 0;
+    private double duration = 0;
+    private bool isPlaying = false;
+    private PlayerBar? playerBar;
+
+    // DotNet reference so JS can call back into this instance
+    private DotNetObjectReference<Home>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            // Pass the .NET reference so JS can call OnTimeUpdate without Blazor events
+            await JSRuntime.InvokeVoidAsync(
+                "initMusicEngine",
+                "audio-player",
+                "visualizer-canvas",
+                _dotNetRef);
+        }
+    }
+
+    /// <summary>
+    /// Called by AudioEngine.js every 250ms via DotNet.invokeMethodAsync.
+    /// Runs fully outside Blazor's event system — audio element is never touched.
+    /// </summary>
+    [JSInvokable]
+    public void OnTimeUpdate(double time, double totalDuration, bool playing)
+    {
+        currentTime = time;
+        duration = totalDuration;
+        isPlaying = playing;
+
+        int newIndex = -1;
+        for (int i = 0; i < lyricsData.Count; i++)
+        {
+            if (time >= lyricsData[i].Time) newIndex = i;
+            else break;
+        }
+
+        if (newIndex != activeIndex)
+        {
+            activeIndex = newIndex;
+        }
+
+        // InvokeAsync ensures thread safety in WASM
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleSeek(double time)
+    {
+        if (playerBar != null)
+            await playerBar.SeekToTime(time);
+    }
+
+    public void Dispose()
+    {
+        _dotNetRef?.Dispose();
+    }
+}

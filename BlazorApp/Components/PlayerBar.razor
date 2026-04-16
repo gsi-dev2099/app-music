@@ -1,0 +1,82 @@
+<footer class="player-controls">
+    <div class="glass-panel">
+        <!-- Audio element: no Blazor event bindings — JS owns it entirely -->
+        <audio id="audio-player"
+               src="musica.mp3"
+               crossorigin="anonymous"
+               preload="auto"></audio>
+
+        <div class="progress-container">
+            <span class="time-label">@FormattedCurrentTime</span>
+            <div class="progress-bar-bg" @onclick="Seek" id="progress-bar-bg">
+                <div class="progress-bar-fill"
+                     style="width: @(Progress.ToString("F1", System.Globalization.CultureInfo.InvariantCulture))%">
+                </div>
+            </div>
+            <span class="time-label">@FormattedDuration</span>
+        </div>
+
+        <div class="btn-group">
+            <button class="play-btn" @onclick="TogglePlay" id="play-pause-btn">
+                @if (IsPlaying)
+                {
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                    </svg>
+                }
+                else
+                {
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                }
+            </button>
+        </div>
+    </div>
+</footer>
+
+@code {
+    // State is now owned by Home.razor and passed down via Parameters
+    [Parameter] public double CurrentTime  { get; set; }
+    [Parameter] public double Duration     { get; set; }
+    [Parameter] public bool   IsPlaying    { get; set; }
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+    private double Progress => Duration > 0 ? (CurrentTime / Duration) * 100.0 : 0;
+    private string FormattedCurrentTime => FormatTime(CurrentTime);
+    private string FormattedDuration    => FormatTime(Duration);
+
+    private async Task TogglePlay()
+    {
+        if (IsPlaying)
+            await JSRuntime.InvokeVoidAsync("audioPause");
+        else
+            await JSRuntime.InvokeVoidAsync("audioPlay");
+        // State will be reflected back via JS→JSInvokable on next poll
+    }
+
+    private async Task Seek(MouseEventArgs e)
+    {
+        var rect = await JSRuntime.InvokeAsync<BoundingRect>("eval",
+            "(() => { var r = document.getElementById('progress-bar-bg').getBoundingClientRect(); return {left: r.left, width: r.width}; })()");
+        await JSRuntime.InvokeVoidAsync("audioSeekByClick", e.ClientX, rect.Left, rect.Width);
+    }
+
+    public async Task SeekToTime(double time)
+    {
+        await JSRuntime.InvokeVoidAsync("audioSeek", time);
+    }
+
+    private static string FormatTime(double s)
+    {
+        if (s <= 0 || double.IsNaN(s) || double.IsInfinity(s)) return "0:00";
+        return $"{(int)Math.Floor(s / 60)}:{(int)(s % 60):00}";
+    }
+
+    private class BoundingRect
+    {
+        public double Left  { get; set; }
+        public double Width { get; set; }
+    }
+}
