@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boulevard of Broken Dreams - Music Experience</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Import beautiful font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Outfit:wght@300;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-overlay"></div>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    
+    <main class="app-container">
+        <!-- TOP SECTION: Fixed Hero -->
+        <header class="hero-section">
+            <div class="header-info">
+                <h2 class="artist">Green Day</h2>
+                <h1 class="song-title">Boulevard of Broken Dreams</h1>
+            </div>
+            <div class="album-art-wrap">
+                <canvas id="visualizer-canvas"></canvas>
+                <img src="cover.png" alt="Album Cover" class="album-art">
+            </div>
+        </header>
+
+        <!-- MIDDLE SECTION: Independent Scrollable Lyrics -->
+        <section class="lyrics-viewport" id="scroll-container">
+            <div class="lyrics-container" id="lyrics">
+                <!-- Lyrics injected here -->
+                <div class="lyrics-placeholder">Loading lyrics...</div>
+            </div>
+        </section>
+
+        <!-- BOTTOM SECTION: Fixed Player -->
+        <footer class="player-controls">
+            <div class="glass-panel">
+                <audio id="audio-player" src="musica.mp3" crossorigin="anonymous"></audio>
+                
+                <div class="progress-container">
+                    <span id="current-time">0:00</span>
+                    <div class="progress-bar-bg" id="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-bar-fill"></div>
+                    </div>
+                    <span id="duration">0:00</span>
+                </div>
+
+                <div class="btn-group">
+                    <button id="play-pause-btn" class="play-btn">
+                        <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
+                            <path d="M8 5v14l11-7z" id="play-path"/>
+                            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" id="pause-path" style="display:none;"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </footer>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
