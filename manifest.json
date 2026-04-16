@@ -3,7 +3,7 @@
   "short_name": "BOBD",
   "description": "Green Day — Boulevard of Broken Dreams · Lyrics & Audio Experience",
   "display": "standalone",
-  "start_url": "/",
+  "start_url": "/app-music/", "scope": "/app-music/",
   "background_color": "#0a0a0c",
   "theme_color": "#ff3c3c",
   "orientation": "portrait-primary",

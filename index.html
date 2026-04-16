@@ -94,7 +94,7 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker
-                    .register('/service-worker.js', { scope: '/' })
+                    .register('/app-music/service-worker.js', { scope: '/app-music/' })
                     .then((reg) => {
                         console.log('[PWA] Service Worker registered:', reg.scope);
 

@@ -7,19 +7,19 @@ const CACHE_NAME = 'bobd-pwa-v1';
 // These are fetched and stored before the SW activates,
 // guaranteeing full offline capability from the first visit.
 const PRECACHE_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/style.css',
-  '/css/app.css',
-  '/js/AudioEngine.js',
-  '/cover.png',
-  '/favicon.png',
-  '/icon-192.png',
-  '/manifest.json',
-  '/musica.mp3',   // ← Full audio cached for offline playback
+  '/app-music/',
+  '/app-music/index.html',
+  '/app-music/css/style.css',
+  '/app-music/css/app.css',
+  '/app-music/js/AudioEngine.js',
+  '/app-music/cover.png',
+  '/app-music/favicon.png',
+  '/app-music/icon-192.png',
+  '/app-music/manifest.json',
+  '/app-music/musica.mp3',   // ← Full audio cached for offline playback
   // Blazor runtime (these are large but essential for WASM to work offline)
-  '/_framework/blazor.webassembly.js',
-  '/_framework/blazor.boot.json',
+  '/app-music/_framework/blazor.webassembly.js',
+  '/app-music/_framework/blazor.boot.json',
 ];
 
 // ─── INSTALL ────────────────────────────────────────────────────────────────
@@ -36,9 +36,9 @@ self.addEventListener('install', (event) => {
 
       // Cache audio with explicit Request to avoid partial-response issues
       try {
-        const audioResponse = await fetch('/musica.mp3', { mode: 'cors' });
+        const audioResponse = await fetch('/app-music/musica.mp3', { mode: 'cors' });
         if (audioResponse.ok) {
-          await cache.put('/musica.mp3', audioResponse);
+          await cache.put('/app-music/musica.mp3', audioResponse);
           console.log('[SW] Audio cached successfully for offline use.');
         }
       } catch (err) {
@@ -86,7 +86,7 @@ self.addEventListener('fetch', (event) => {
   // ── Navigation: Always serve index.html (Blazor SPA routing) ─────────────
   if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match('/index.html').then((cached) => cached || fetch(request))
+      caches.match('/app-music/index.html').then((cached) => cached || fetch(request))
     );
     return;
   }
@@ -117,7 +117,7 @@ self.addEventListener('fetch', (event) => {
 // This lets the <audio> element seek while offline.
 async function handleAudioRequest(request) {
   const cache = await caches.open(CACHE_NAME);
-  const cachedResponse = await cache.match('/musica.mp3');
+  const cachedResponse = await cache.match('/app-music/musica.mp3');
 
   // If we have the full file cached, handle range requests manually
   if (cachedResponse) {
@@ -156,10 +156,10 @@ async function handleAudioRequest(request) {
     const networkResponse = await fetch(request);
     if (networkResponse.ok) {
       // Cache the full response (ignore Range header for storage)
-      const fullResponse = await fetch('/musica.mp3');
+      const fullResponse = await fetch('/app-music/musica.mp3');
       if (fullResponse.ok) {
         const cloned = fullResponse.clone();
-        cache.put('/musica.mp3', cloned);
+        cache.put('/app-music/musica.mp3', cloned);
       }
     }
     return networkResponse;
