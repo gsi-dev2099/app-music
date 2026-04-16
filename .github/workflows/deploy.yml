@@ -21,13 +21,41 @@ jobs:
       - name: Publish App
         run: dotnet publish BlazorApp/BlazorApp.csproj -c Release -o release
 
-      - name: Change base-tag in index.html from / to repository name
-        run: sed -i 's/<base href="\/" \/>/<base href="\/${{ github.event.repository.name }}\/" \/>/g' release/wwwroot/index.html
+      - name: Fix base-href in index.html
+        run: |
+          REPO=${{ github.event.repository.name }}
+          sed -i "s|<base href=\"/\" />|<base href=\"/${REPO}/\" />|g" release/wwwroot/index.html
+
+      - name: Fix start_url and scope in manifest.json
+        run: |
+          REPO=${{ github.event.repository.name }}
+          sed -i "s|\"start_url\": \"/\"|\"start_url\": \"/${REPO}/\", \"scope\": \"/${REPO}/\"|g" release/wwwroot/manifest.json
+
+      - name: Fix service worker registration URL in index.html
+        run: |
+          REPO=${{ github.event.repository.name }}
+          sed -i "s|register('/service-worker.js', { scope: '/' })|register('/${REPO}/service-worker.js', { scope: '/${REPO}/' })|g" release/wwwroot/index.html
+
+      - name: Fix asset paths in service-worker.js
+        run: |
+          REPO=${{ github.event.repository.name }}
+          sed -i "s|'/'|'/${REPO}/'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/index.html'|'/${REPO}/index.html'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/css/style.css'|'/${REPO}/css/style.css'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/css/app.css'|'/${REPO}/css/app.css'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/js/AudioEngine.js'|'/${REPO}/js/AudioEngine.js'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/cover.png'|'/${REPO}/cover.png'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/favicon.png'|'/${REPO}/favicon.png'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/icon-192.png'|'/${REPO}/icon-192.png'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/manifest.json'|'/${REPO}/manifest.json'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/musica.mp3'|'/${REPO}/musica.mp3'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/_framework/blazor.webassembly.js'|'/${REPO}/_framework/blazor.webassembly.js'|g" release/wwwroot/service-worker.js
+          sed -i "s|'/_framework/blazor.boot.json'|'/${REPO}/_framework/blazor.boot.json'|g" release/wwwroot/service-worker.js
 
       - name: Add .nojekyll file
         run: touch release/wwwroot/.nojekyll
 
-      - name: Commit and Push to gh-pages branch
+      - name: Deploy to gh-pages branch
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
